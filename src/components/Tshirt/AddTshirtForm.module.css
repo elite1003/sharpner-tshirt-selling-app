@@ -1,0 +1,10 @@
+.addProduct {
+  width: 90%;
+  max-width: 40rem;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.actions {
+  text-align: center;
+}
