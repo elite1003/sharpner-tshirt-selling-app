@@ -1,6 +1,6 @@
-import React, { useReducer } from "react";
+import React, { useCallback, useEffect, useReducer } from "react";
 import AvailableTshirtContext from "./available-tshirt-context";
-
+import { URL } from "./env/globals";
 const defaultState = {
   items: [],
 };
@@ -12,7 +12,12 @@ const availableTshirtReducer = (state, action) => {
       items: updatedItems,
     };
   }
-  if (action.type === "REDUCE") {
+  if (action.type === "INIT") {
+    return {
+      items: action.item,
+    };
+  }
+  if (action.type === "REMOVE") {
     const existingItemIndex = state.items.findIndex(
       (item) => item.id === action.item.id
     );
@@ -28,7 +33,7 @@ const availableTshirtReducer = (state, action) => {
           ? existingItem.mediumSizeQuantity - 1
           : existingItem.mediumSizeQuantity,
       smallSizeQuantity:
-        action.item.size === "L"
+        action.item.size === "S"
           ? existingItem.smallSizeQuantity - 1
           : existingItem.smallSizeQuantity,
     };
@@ -47,13 +52,38 @@ const AvailableTshirtContextProvider = (props) => {
     defaultState
   );
 
+  const fetchProduct = useCallback(async () => {
+    try {
+      let availableProduct = [];
+      const response = await fetch(`${URL}/product.json`);
+      const data = await response.json();
+      for (const key in data) {
+        if (Object.hasOwnProperty.call(data, key)) {
+          availableProduct.push({ ...data[key], id: key });
+        }
+      }
+      dispatchAvailableTshirtAction({ type: "INIT", item: availableProduct });
+    } catch (e) {
+      alert(e.message);
+    }
+  }, []);
+  useEffect(() => {
+    fetchProduct();
+  }, [fetchProduct]);
   const addAvailableTshirtHandler = (item) => {
     dispatchAvailableTshirtAction({ type: "ADD", item: item });
   };
 
+  const removeAvailableTshirtHandler = (id, size) => {
+    dispatchAvailableTshirtAction({
+      type: "REMOVE",
+      item: { id: id, size: size },
+    });
+  };
   const availableTshirtContext = {
     items: availableTshirtState.items,
     addItem: addAvailableTshirtHandler,
+    removeItem: removeAvailableTshirtHandler,
   };
   return (
     <AvailableTshirtContext.Provider value={availableTshirtContext}>

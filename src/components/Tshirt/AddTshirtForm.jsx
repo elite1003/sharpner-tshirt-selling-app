@@ -14,8 +14,10 @@ const AddTshirtForm = (props) => {
   const [mediumSizeQuantity, setMediumSizeQuantity] = useState("");
   const [smallSizeQuantity, setSmallSizeQuantity] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
+
   const AvailableTshirtCtx = useContext(AvailableTshirtContext);
 
+  //set the form validity
   useEffect(() => {
     const id = setTimeout(() => {
       setIsFormValid(
@@ -38,6 +40,7 @@ const AddTshirtForm = (props) => {
     mediumSizeQuantity,
     smallSizeQuantity,
   ]);
+
   const tshirtDescriptionInputChangeHandler = (e) => {
     setTshirtDescription(e.target.value);
   };
@@ -47,7 +50,6 @@ const AddTshirtForm = (props) => {
   const tshirtNameInputChangeHandler = (e) => {
     setTshirtName(e.target.value);
   };
-
   const largeSizeInputChangeHandler = (e) => {
     setLargeSizeQuantity(e.target.value);
   };
@@ -59,23 +61,24 @@ const AddTshirtForm = (props) => {
   };
   const submitHandler = async (e) => {
     e.preventDefault();
+    const tshirtDetail = {
+      name: tshirtName,
+      price: +sellingPrice,
+      description: tshirtDescription,
+      largeSizeQuantity: +largeSizeQuantity,
+      mediumSizeQuantity: +mediumSizeQuantity,
+      smallSizeQuantity: +smallSizeQuantity,
+    };
     if (isFormValid) {
-      const response = await fetch(`${URL}/product`, {
+      const response = await fetch(`${URL}/product.json`, {
         method: "POST",
-        body: JSON.stringify({
-          name: tshirtName,
-          price: +sellingPrice,
-          description: tshirtDescription,
-          largeSizeQuantity: +largeSizeQuantity,
-          mediumSizeQuantity: +mediumSizeQuantity,
-          smallSizeQuantity: +smallSizeQuantity,
-        }),
+        body: JSON.stringify(tshirtDetail),
         headers: {
           "Content-type": "application/json",
         },
       });
-      AvailableTshirtCtx.addItem(response);
-      console.log(response);
+      const data = await response.json();
+      AvailableTshirtCtx.addItem({ id: data.name, ...tshirtDetail });
       setTshirtDescription("");
       setSellingPrice("");
       setTshirtName("");
@@ -84,6 +87,7 @@ const AddTshirtForm = (props) => {
       setSmallSizeQuantity("");
     }
   };
+
   return (
     <section className={classes.addProduct}>
       <Card>
@@ -114,21 +118,21 @@ const AddTshirtForm = (props) => {
             value={largeSizeQuantity}
             type="number"
             id="largeSize"
-            label="Large Size"
+            label="Large Size Qt."
           />
           <Input
             onChange={mediumSizeInputChangeHandler}
             value={mediumSizeQuantity}
             type="number"
             id="mediumSize"
-            label="Medium Size"
+            label="Medium Size Qt."
           />
           <Input
             onChange={smallSizeInputChangeHandler}
             value={smallSizeQuantity}
             type="number"
             id="smallSize"
-            label="Small Size"
+            label="Small Size Qt."
           />
           <Button type="submit">Add Product</Button>
         </form>

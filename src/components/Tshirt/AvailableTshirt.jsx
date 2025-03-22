@@ -9,8 +9,8 @@ const AvailableTshirt = () => {
   const { items } = AvailableTshirtCtx;
   const tshirtsList = items.map((tshirt) => (
     <TshirtItem
-      id={tshirt._id}
-      key={tshirt._id}
+      id={tshirt.id}
+      key={tshirt.id}
       name={tshirt.name}
       price={tshirt.price}
       description={tshirt.description}

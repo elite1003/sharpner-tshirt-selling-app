@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useCallback, useReducer } from "react";
 import CartContext from "./cart-context";
 
 const defaultState = {
@@ -7,6 +7,12 @@ const defaultState = {
 };
 
 const cartReducer = (state, action) => {
+  if (action.type === "INIT") {
+    return {
+      items: action.payload.items,
+      totalAmount: action.payload.totalAmount,
+    };
+  }
   if (action.type === "ADD") {
     const updatedTotalAmount =
       state.totalAmount + action.item.amount * action.item.price;
@@ -19,7 +25,7 @@ const cartReducer = (state, action) => {
       const updatedItem = {
         ...existingCartItem,
         totalAmount: existingCartItem.totalAmount + existingCartItem.price,
-        amount: existingCartItem.amount + +action.item.amount,
+        amount: existingCartItem.amount + action.item.amount,
         largeSizeQuantity:
           action.item.size === "L"
             ? action.item.amount + existingCartItem.largeSizeQuantity
@@ -59,14 +65,21 @@ const cartReducer = (state, action) => {
 const CartContextProvider = (props) => {
   const [cartState, dispatchCartAction] = useReducer(cartReducer, defaultState);
 
-  const addItemToCartHandler = (item) => {
+  const addItemToCartHandler = useCallback((item) => {
     dispatchCartAction({ type: "ADD", item: item });
-  };
+  }, []);
 
+  const initialiseCartHandler = useCallback((items, totalAmount) => {
+    dispatchCartAction({
+      type: "INIT",
+      payload: { items, totalAmount },
+    });
+  }, []);
   const cartContext = {
     items: cartState.items,
     totalAmount: cartState.totalAmount,
     addItem: addItemToCartHandler,
+    initialiseCart: initialiseCartHandler,
   };
   return (
     <CartContext.Provider value={cartContext}>
